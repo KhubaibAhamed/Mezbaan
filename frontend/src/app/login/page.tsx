@@ -12,7 +12,7 @@ export default function LoginPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
 
-  // Trigger entrance animation
+  // Trigger entrance animation on mount
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -22,35 +22,33 @@ export default function LoginPage() {
     setIsLoading(true);
     setNotification(null);
     
-    // Simulate network delay and backend logic
+    // Simulate network latency and database validation
     setTimeout(() => {
       setIsLoading(false);
       
       if (isLoginMode) {
-        // Success Notification for Login
         setNotification({ 
           message: `Successfully authenticated! Redirecting...`, 
           type: 'success' 
         });
         
-        // --- ADDED REDIRECT LOGIC HERE ---
+        // --- SECURE DYNAMIC ROUTING PATHWAY ---
         setTimeout(() => {
           if (email.toLowerCase() === 'admin@mezbaan.com') {
-            window.location.href = '/admin'; // Send to Admin Dashboard
+            window.location.href = '/admin'; // Route to Restaurant Admin Panel
           } else {
-            // For now, send everyone to admin until we build the user page
-            window.location.href = '/admin'; 
+            window.location.href = '/discover'; // Route Customer to Discovery & Seat Selection Portal
           }
-        }, 1000);
+        }, 1200);
 
       } else {
         // Success Notification for Sign Up
         setNotification({ 
-          message: `Account created for ${name}! Please sign in to continue.`, 
+          message: `Account created for ${name}! You can now sign in to start booking.`, 
           type: 'success' 
         });
         
-        // Clear password and switch to login mode automatically
+        // Reset states and switch tab automatically
         setPassword('');
         setTimeout(() => {
           setIsLoginMode(true);
@@ -63,27 +61,27 @@ export default function LoginPage() {
   return (
     <main className={`relative flex items-center justify-center w-full min-h-screen bg-[#0a0a0a] overflow-hidden transition-all duration-1000 ease-out ${isMounted ? 'opacity-100' : 'opacity-0 scale-95 blur-md'}`}>
       
-      {/* Background ambient glowing spheres */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-yellow-600/20 rounded-full blur-[120px] pointer-events-none transition-all duration-1000" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-yellow-900/20 rounded-full blur-[120px] pointer-events-none transition-all duration-1000" />
+      {/* Dynamic atmospheric ambient lighting spheres */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-yellow-600/10 rounded-full blur-[120px] pointer-events-none transition-all duration-1000" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-yellow-900/10 rounded-full blur-[120px] pointer-events-none transition-all duration-1000" />
 
-      {/* Main Authentication Card */}
+      {/* Primary Interactive Auth Panel */}
       <div className="relative z-10 w-full max-w-md p-8 mx-4 border border-white/10 rounded-2xl bg-black/50 backdrop-blur-xl shadow-2xl overflow-hidden">
         
-        {/* Header Section */}
+        {/* Branding Container */}
         <div className="flex flex-col items-center mb-8">
           <div className="flex items-center justify-center w-16 h-16 mb-4 border border-yellow-600 rounded-full bg-black/50 transition-transform duration-500 hover:scale-110 hover:rotate-12">
             <UtensilsCrossed className="w-8 h-8 text-yellow-500" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-white transition-all duration-300">
-            {isLoginMode ? 'Welcome Back' : 'Create Account'}
+            {isLoginMode ? 'Welcome Back' : 'Join Mezbaan'}
           </h1>
-          <p className="mt-2 text-sm text-gray-400">
-            {isLoginMode ? 'Enter your credentials to continue to Mezbaan' : 'Join Mezbaan to unlock premier dining experiences'}
+          <p className="mt-2 text-sm text-gray-400 text-center">
+            {isLoginMode ? 'Sign in to access premium dining & dynamic reservations' : 'Unlock seat selection, pre-ordering, and real-time menus'}
           </p>
         </div>
 
-        {/* Custom Notification Banner (Replaces standard alerts) */}
+        {/* Dynamic Alert Banner */}
         {notification && (
           <div className={`flex items-center gap-3 p-4 mb-6 rounded-lg border text-sm font-medium animate-in fade-in slide-in-from-top-2 duration-300 ${notification.type === 'success' ? 'bg-green-500/10 border-green-500/50 text-green-400' : 'bg-red-500/10 border-red-500/50 text-red-400'}`}>
             {notification.type === 'success' ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
@@ -91,10 +89,10 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* The Form */}
+        {/* Unified Input Fields */}
         <form onSubmit={handleSubmit} className="space-y-5">
           
-          {/* Dynamic Name Field (Only visible in Sign Up mode) */}
+          {/* Sign Up Specific Form Field */}
           <div className={`space-y-2 overflow-hidden transition-all duration-500 ease-in-out ${isLoginMode ? 'max-h-0 opacity-0 m-0' : 'max-h-24 opacity-100'}`}>
             <label className="text-sm font-medium text-gray-300">Full Name</label>
             <div className="relative">
@@ -105,15 +103,15 @@ export default function LoginPage() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full py-3 pl-10 pr-4 text-white transition-all bg-black/30 border border-gray-700 rounded-lg focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 disabled:opacity-50"
-                placeholder="John Doe"
+                className="w-full py-3 pl-10 pr-4 text-white transition-all bg-black/30 border border-gray-700 rounded-lg focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 disabled:opacity-50 text-sm"
+                placeholder="E.g. Rajesh Malhotra"
                 required={!isLoginMode}
                 disabled={isLoading}
               />
             </div>
           </div>
 
-          {/* Email Field */}
+          {/* Core Email Input */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-300">Email Address</label>
             <div className="relative">
@@ -124,15 +122,15 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full py-3 pl-10 pr-4 text-white transition-all bg-black/30 border border-gray-700 rounded-lg focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 disabled:opacity-50"
-                placeholder="you@example.com"
+                className="w-full py-3 pl-10 pr-4 text-white transition-all bg-black/30 border border-gray-700 rounded-lg focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 disabled:opacity-50 text-sm"
+                placeholder="E.g. admin@mezbaan.com or customer@gmail.com"
                 required
                 disabled={isLoading}
               />
             </div>
           </div>
 
-          {/* Password Field */}
+          {/* Secure Password Input */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium text-gray-300">Password</label>
@@ -148,7 +146,7 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full py-3 pl-10 pr-4 text-white transition-all bg-black/30 border border-gray-700 rounded-lg focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 disabled:opacity-50"
+                className="w-full py-3 pl-10 pr-4 text-white transition-all bg-black/30 border border-gray-700 rounded-lg focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 disabled:opacity-50 text-sm"
                 placeholder="••••••••"
                 required
                 disabled={isLoading}
@@ -156,17 +154,18 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {/* Trigger Button */}
           <button
             type="submit"
             disabled={isLoading}
-            className="flex items-center justify-center w-full gap-2 py-3 mt-6 text-black transition-all bg-yellow-500 rounded-lg hover:bg-yellow-400 disabled:opacity-70 disabled:cursor-wait font-semibold hover:shadow-[0_0_15px_rgba(234,179,8,0.3)]"
+            className="flex items-center justify-center w-full gap-2 py-3 mt-6 text-black transition-all bg-yellow-500 rounded-lg hover:bg-yellow-400 disabled:opacity-70 disabled:cursor-wait font-semibold hover:shadow-[0_0_15px_rgba(234,179,8,0.3)] text-sm"
           >
-            {isLoading ? 'Processing...' : (isLoginMode ? 'Sign In' : 'Create Account')}
+            {isLoading ? 'Securing Connection...' : (isLoginMode ? 'Sign In' : 'Create Account')}
             {!isLoading && <ArrowRight className="w-5 h-5" />}
           </button>
         </form>
 
-        {/* Footer Toggles */}
+        {/* Interactive Mode Toggles */}
         <div className="mt-8 text-center">
           <p className="text-sm text-gray-400">
             {isLoginMode ? "Don't have an account? " : "Already have an account? "}
@@ -183,7 +182,7 @@ export default function LoginPage() {
           </p>
           <div className="mt-6 pt-6 border-t border-white/10">
             <a href="/" className="inline-flex items-center text-xs text-gray-500 hover:text-white transition-colors">
-              <ArrowRight className="w-3 h-3 mr-1 rotate-180" /> Return to Home
+              <ArrowRight className="w-3 h-3 mr-1 rotate-180" /> Return to Welcome Screen
             </a>
           </div>
         </div>
