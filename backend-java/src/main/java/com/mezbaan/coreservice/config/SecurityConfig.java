@@ -1,30 +1,38 @@
 package com.mezbaan.coreservice.config;
 
+import com.mezbaan.coreservice.security.JwtAuthFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    @Autowired
+    private JwtAuthFilter jwtAuthFilter;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // 1. Disable CSRF (Cross-Site Request Forgery) as we will use JWT tokens
             .csrf(csrf -> csrf.disable())
-            
-            // 2. Configure Endpoint Access Rules
+            // Set session management to stateless since we use JWT
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // Allow anyone to access our test endpoint and future login endpoints
-                .requestMatchers("/api/test", "/api/auth/**").permitAll()
-                // Require authentication for every other request
+                // Public endpoints
+                .requestMatchers("/api/test", "/api/auth/**", "/api/restaurants").permitAll()
+                // Require ADMIN role for admin endpoints (Example)
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                // All other endpoints require authentication
                 .anyRequest().authenticated()
             )
-            
-            // 3. Disable the default Spring Security HTML Login page and Browser Popup
+            // Add our custom JWT filter BEFORE the standard Spring security filter
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .formLogin(form -> form.disable())
             .httpBasic(basic -> basic.disable());
 

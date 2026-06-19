@@ -37,65 +37,6 @@ interface Restaurant {
   contact: string;
 }
 
-const mockRestaurants: Restaurant[] = [
-  {
-    id: 1,
-    name: "The Royal Biryani Durbar",
-    cuisine: "Mughlai & Awadhi",
-    rating: 4.9,
-    deliveryTime: "30-40 min prep",
-    priceLevel: "₹₹₹",
-    location: "Sardar Marg, Civil Lines",
-    availableTables: 4,
-    image: "🍛",
-    tags: ["Best Seller", "Fine Dine", "Live Music"],
-    description: "Experience royal culinary perfection with recipes passed down through generations of Awadhi chefs.",
-    contact: "+91 91100 22334"
-  },
-  {
-    id: 2,
-    name: "Dakshin Express",
-    cuisine: "Traditional South Indian",
-    rating: 4.7,
-    deliveryTime: "15-20 min prep",
-    priceLevel: "₹",
-    location: "Station Road Corner",
-    availableTables: 7,
-    image: "🥞",
-    tags: ["Fast Prep", "Pure Veg", "Family Seating"],
-    description: "Crispy ghee roast paper-thin dosas and piping hot traditional filter coffee served fresh.",
-    contact: "+91 92200 33445"
-  },
-  {
-    id: 3,
-    name: "Pind Punjab De",
-    cuisine: "North Indian & Tandoori",
-    rating: 4.8,
-    deliveryTime: "25-35 min prep",
-    priceLevel: "₹₹",
-    location: "National Highway Link",
-    availableTables: 3,
-    image: "🫓",
-    tags: ["Clay Tandoor", "Butter Heavy", "Outdoor Garden"],
-    description: "Authentic tandoori specialties and slow-cooked rich black dal makhani straight from Punjab.",
-    contact: "+91 93300 44556"
-  },
-  {
-    id: 4,
-    name: "Zayka Street",
-    cuisine: "Indo-Chinese Fusion",
-    rating: 4.4,
-    deliveryTime: "15-25 min prep",
-    priceLevel: "₹",
-    location: "Gandhi Chowk Bazaar",
-    availableTables: 9,
-    image: "🍜",
-    tags: ["Wok Tossed", "Late Night", "Pocket Friendly"],
-    description: "Spicy Schezwan noodles, crispy Manchurian, and authentic street-style food on a budget.",
-    contact: "+91 94400 55667"
-  }
-];
-
 // Mock menu items for pre-ordering
 const menuItems = [
   { id: 'm1', name: 'Special Chicken Biryani', price: 340, veg: false },
@@ -105,12 +46,26 @@ const menuItems = [
   { id: 'm5', name: 'Crispy Butter Dosa', price: 150, veg: true },
 ];
 
+const mockTableSeats = [
+  { code: 'A1', seats: 2, status: 'free', label: 'Window' },
+  { code: 'A2', seats: 2, status: 'occupied', label: 'Window' },
+  { code: 'B1', seats: 4, status: 'free', label: 'Center' },
+  { code: 'B2', seats: 4, status: 'free', label: 'Center' },
+  { code: 'C1', seats: 6, status: 'occupied', label: 'Booth' },
+  { code: 'C2', seats: 6, status: 'free', label: 'Booth' },
+  { code: 'D1', seats: 2, status: 'free', label: 'Bar' },
+  { code: 'D2', seats: 2, status: 'free', label: 'Bar' },
+];
+
 export default function DiscoverPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [activeRestaurant, setActiveRestaurant] = useState<Restaurant | null>(null);
   
+  // 🚀 NEW: Live Data State for PostgreSQL
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+
   // Seating and Booking states
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [bookingTime, setBookingTime] = useState<string>('');
@@ -139,27 +94,73 @@ export default function DiscoverPage() {
     // Set default booking date as today
     const today = new Date().toISOString().split('T')[0];
     setBookingDate(today);
+
+    // 🚀 NEW: Fetch live data from PostgreSQL via Java!
+    const fetchLiveRestaurants = async () => {
+      try {
+        const response = await fetch('https://fuzzy-zebra-5g44gqqwxvvqcpg4p-8080.app.github.dev/api/restaurants');
+        if (response.ok) {
+          const liveData = await response.json();
+          
+          const formattedData: Restaurant[] = liveData.map((dbRest: any) => ({
+            id: dbRest.id,
+            name: dbRest.name,
+            location: dbRest.location,
+            cuisine: "Multi-Cuisine (Live DB)",
+            rating: 5.0,
+            deliveryTime: "Live Kitchen",
+            priceLevel: "₹₹",
+            availableTables: 2, // We will fetch live table status soon!
+            image: "🔥",
+            tags: ["Live Database", "PostgreSQL"],
+            description: "This data is pulled directly from your secure Java Spring Boot API!",
+            contact: "+91 99999 00000"
+          }));
+          
+          setRestaurants(formattedData);
+        }
+      } catch (error) {
+        console.error("Failed to fetch live restaurants:", error);
+      }
+    };
+    fetchLiveRestaurants();
   }, []);
-
-  if (!isMounted) return null;
-
-  const mockTableSeats = [
-    { code: "A1", label: "Window Side", seats: 2, status: "free" },
-    { code: "A2", label: "Cozy Corner", seats: 2, status: "occupied" },
-    { code: "B1", label: "Executive Lounge", seats: 6, status: "free" },
-    { code: "B2", label: "Family Circle", seats: 4, status: "occupied" },
-    { code: "C1", label: "Window Side Side", seats: 4, status: "free" },
-    { code: "C2", label: "Standard Inner", seats: 2, status: "free" },
-    { code: "D1", label: "VIP Sofa", seats: 8, status: "free" },
-    { code: "D2", label: "Romantic Booth", seats: 2, status: "occupied" }
-  ];
 
   const handleSeatSelect = (code: string, status: string) => {
     if (status === 'occupied') return;
-    if (selectedSeats.includes(code)) {
-      setSelectedSeats(selectedSeats.filter(s => s !== code));
-    } else {
-      setSelectedSeats([...selectedSeats, code]);
+    setSelectedSeats(prev => 
+      prev.includes(code) ? prev.filter(s => s !== code) : [...prev, code]
+    );
+  };
+
+  const handleSendMessage = async (e?: React.FormEvent, predefined?: string) => {
+    if (e) e.preventDefault();
+    const messageToSend = predefined || chatInput;
+    if (!messageToSend.trim()) return;
+
+    const newUserMsg = { sender: 'user', text: messageToSend };
+    setChatMessages(prev => [...prev, newUserMsg]);
+    setChatInput('');
+    setIsBotTyping(true);
+
+    try {
+      // 🚀 Send the message to the Python AI Microservice (Port 8000)!
+      const response = await fetch('https://fuzzy-zebra-5g44gqqwxvvqcpg4p-8000.app.github.dev/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: messageToSend }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setChatMessages(prev => [...prev, { sender: 'bot', text: data.response }]);
+      } else {
+        setChatMessages(prev => [...prev, { sender: 'bot', text: "Connection error: AI Core offline." }]);
+      }
+    } catch (error) {
+      setChatMessages(prev => [...prev, { sender: 'bot', text: "Cannot reach the Python server. Is Port 8000 set to Public?" }]);
+    } finally {
+      setIsBotTyping(false);
     }
   };
 
@@ -181,72 +182,79 @@ export default function DiscoverPage() {
     }, 0);
   };
 
-  const handleSendMessage = (e?: React.FormEvent, predefined?: string) => {
-    if (e) e.preventDefault();
-    const query = predefined || chatInput;
-    if (!query.trim()) return;
-
-    setChatMessages(prev => [...prev, { sender: 'user', text: query }]);
-    setChatInput('');
-    setIsBotTyping(true);
-
-    setTimeout(() => {
-      let botResponse = "I've logged your request. Let me check with Mezbaan database...";
-      const lowerQuery = query.toLowerCase();
-
-      if (lowerQuery.includes('spicy') || lowerQuery.includes('recommend') || lowerQuery.includes('best dish')) {
-        botResponse = "At 'The Royal Biryani Durbar', you must order the Special Chicken Biryani (cooked in slow-dum style with traditional ghee). It has a robust spice level. If you prefer milder food, try the Paneer Butter Masala!";
-      } else if (lowerQuery.includes('veg') || lowerQuery.includes('vegetarian')) {
-        botResponse = "Dakshin Express is a completely 100% Pure Vegetarian restaurant. They are famous for their paper-thin crispy Butter Dosa and authentic filter coffee!";
-      } else if (lowerQuery.includes('book') || lowerQuery.includes('reserve')) {
-        botResponse = "To book a table instantly, select one of the premium restaurant cards in front of you, pick your custom time-slot, select your seats on our dynamic layout, and hit 'Confirm Booking'!";
-      } else {
-        botResponse = "I've searched your nearby restaurants. 3 out of 4 venues are open right now with available tables! Let me know if you want me to pre-select a romantic table next to a window.";
-      }
-
-      setChatMessages(prev => [...prev, { sender: 'bot', text: botResponse }]);
-      setIsBotTyping(false);
-    }, 1200);
-  };
-
-  const handleFinalCheckout = () => {
-    if (!bookingTime || selectedSeats.length === 0 || !bookingDate) {
-      alert("Please choose a Date, Time-slot, and at least 1 Seat on the visual map to continue!");
+  const handleFinalCheckout = async () => {
+    if (!bookingTime || selectedSeats.length === 0 || !bookingDate || !activeRestaurant) {
+      alert("Please choose a Date, Time-slot, and at least 1 Seat to continue!");
       return;
     }
 
     setIsProcessingBooking(true);
     setBookingProgress(0);
 
+    // Fake progress bar for UI UX
     const interval = setInterval(() => {
-      setBookingProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setTimeout(() => {
-            setIsProcessingBooking(false);
-            setFinalBookingCode(`MZB-${Math.floor(100000 + Math.random() * 900000)}`);
-            setShowReceipt(true);
-          }, 600);
-          return 100;
-        }
-        return prev + 20;
-      });
+      setBookingProgress(prev => Math.min(prev + 20, 90));
     }, 300);
+
+    try {
+      // We are sending the first selected seat (e.g. "A1") 
+      const seatCode = selectedSeats[0];
+      const tableId = seatCode.includes('1') ? 1 : 2; 
+
+      // 🛡️ SECURITY: Grab the JWT token we saved during login!
+      const token = localStorage.getItem('mezbaan_jwt');
+
+      // 🚀 The Magic Connection: Sending the booking to Java WITH the Security Token!
+      const response = await fetch('https://fuzzy-zebra-5g44gqqwxvvqcpg4p-8080.app.github.dev/api/bookings', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // THE VIP PASS!
+        },
+        body: JSON.stringify({ 
+          tableId: tableId, 
+          date: bookingDate, 
+          timeSlot: bookingTime 
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        clearInterval(interval);
+        setBookingProgress(100);
+        
+        setTimeout(() => {
+          setIsProcessingBooking(false);
+          setFinalBookingCode(`MZB-${data.bookingId}-${Math.floor(1000 + Math.random() * 9000)}`);
+          setShowReceipt(true);
+        }, 600);
+      } else {
+        const errorData = await response.json();
+        alert(`Booking Failed: ${errorData.error || 'Server rejected the request.'}`);
+        clearInterval(interval);
+        setIsProcessingBooking(false);
+      }
+    } catch (error) {
+      console.error("Booking failed:", error);
+      alert("Could not connect to the booking server.");
+      clearInterval(interval);
+      setIsProcessingBooking(false);
+    }
   };
 
   const handleDownloadInvoice = () => {
     alert("Invoice generated! Downloading PDF directly using browser channels...");
   };
 
-  // Filter list based on search and selected tag
-  const filteredRestaurants = mockRestaurants.filter(r => {
+  // Filter list based on search and selected tag using the NEW LIVE STATE
+  const filteredRestaurants = restaurants.filter(r => {
     const matchesSearch = r.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           r.cuisine.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesTag = selectedTag ? r.tags.includes(selectedTag) : true;
     return matchesSearch && matchesTag;
   });
 
-  const allTags = Array.from(new Set(mockRestaurants.flatMap(r => r.tags)));
+  const allTags = Array.from(new Set(restaurants.flatMap(r => r.tags)));
 
   return (
     <div className="flex h-screen bg-[#050505] text-gray-100 overflow-hidden relative">

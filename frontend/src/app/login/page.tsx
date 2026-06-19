@@ -16,7 +16,7 @@ export default function LoginPage() {
 
     try {
       // 🚀 Connects directly to your Java Spring Boot backend on port 8080!
-      const response = await fetch('http://localhost:8080/api/auth/login', {
+      const response = await fetch('https://fuzzy-zebra-5g44gqqwxvvqcpg4p-8080.app.github.dev/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -27,8 +27,12 @@ export default function LoginPage() {
       if (response.ok) {
         const data = await response.json();
         
+        // 🛡️ SECURITY: Save the JWT token securely to the browser!
+        localStorage.setItem('mezbaan_jwt', data.token);
+        localStorage.setItem('mezbaan_role', data.role);
+        
         // Routes the user to the correct dashboard based on backend role!
-        if (data.role === 'ADMIN') {
+        if (data.role === 'ADMIN' || data.role === 'SUPER_ADMIN') {
           window.location.href = '/admin';
         } else {
           window.location.href = '/discover';
